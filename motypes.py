@@ -5,12 +5,14 @@ import json
 class Context(ABC):
     @abstractmethod
     def __init__(self):
-        self.context
+        self.context: dict
     def __getitem__(self, key):
         return self.context[key]
     def __setitem__(self): pass
     def __contains__(self, item):
         return item in self.context.keys()
+    def get(self, key, default):
+        return self.context.get(key, default)
 
 class ChatContext(Context):
     def __init__(self, chat_object: dict):
@@ -39,8 +41,8 @@ class MessageContext(Context):
 
 class telegramType(ABC):
     @abstractmethod
-    def __init__(self):
-        self.object: dict
+    def __init__(self, **kwargs):
+        self.object = kwargs
     def __str__(self):
         return json.dumps(self.object, default=serialize)
 
@@ -50,7 +52,8 @@ def serialize(object: telegramType | ChatContext):
         case ChatContext(): return object.id
 
 class KeyboardButton(telegramType):
-    def __init__(self, text: str, style: str = None, icon_custom_emoji_id: str = None):
+    STYLES = Literal['danger', 'success', 'primary']
+    def __init__(self, text: str, style: STYLES = 'primary', icon_custom_emoji_id: str = None):
         self.object = {"text": text}
         if style:
             self.object['style'] = style
@@ -63,10 +66,12 @@ class InlineKeyboardButton(KeyboardButton):
         if callback_data:
             self.object['callback_data'] = callback_data
 
-class ReplyKeyboardMarkup(telegramType):
+class KeyboardMarkup(telegramType): pass
+
+class ReplyKeyboardMarkup(KeyboardMarkup):
     def __init__(self, *buttons):
         self.object = {"keyboard": [*buttons]}
 
-class InlineKeyboardMarkup(telegramType):
+class InlineKeyboardMarkup(KeyboardMarkup):
     def __init__(self, *buttons):
         self.object = {"inline_keyboard": [*buttons]}

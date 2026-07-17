@@ -4,8 +4,18 @@ from typing import Literal
 from motypes import *
 import time
 
-class BadRequest(Exception): pass
-
+class RequestException(Exception):
+    def __init__(self, status_code: int, *args):
+        super().__init__(*args)
+        self.code = status_code
+    def __str__(self):
+        return f'Request Error, code: {self.code}'
+class BadRequest(RequestException):
+    def __init__(self, endpoint, method, json,status_code, *args):
+        super().__init__(status_code, *args)
+        self.msg = f'-> {endpoint}({method}) -> {json}'
+    def __str__(self):
+        return f'Request Error, code: {self.code}\n{self.msg}'
 class Bot():
     API = 'https://api.telegram.org/bot'
 
@@ -35,11 +45,10 @@ class Bot():
                 return answer.get('result', [])
         elif responce.status_code == 429:
             time.sleep(0.2)
-        print("!!! Ошибка запроса:", responce.status_code)
-        print(responce.json()['description'])
-        print(endpoint, method, jsondata)
-        if responce.status_code == 400:
-            raise BadRequest
+        elif responce.status_code == 400:
+            raise BadRequest(endpoint, method, jsondata, responce.status_code)
+        raise RequestException(responce.status_code)
+
         return False
     
     @property
@@ -55,9 +64,11 @@ class Bot():
             except KeyboardInterrupt:
                 self.__run = False
                 print('Завершаю работу...')
-            except BadRequest:
+            except BadRequest as e:
                 self.__run = False
-                print("Плохой запрос")
+                print("Плохой запрос!", e)
+            except RequestException as e:
+                print(e)
             #except BaseException as e:
             #    print(f'!!!Exception {type(e)}:', e)
 
@@ -76,6 +87,14 @@ class Bot():
     
     def sendMessage(self, text, chatId: int, **kwargs):
         self.method('sendMessage', text = text, chat_id=chatId, **kwargs)
+
+    def copyMessage(self, chat_id: int, message_id: int, from_chat_id: int = None, reply_markup: KeyboardMarkup = None, **kwargs):
+        if not from_chat_id:
+            from_chat_id = chat_id
+        if not reply_markup:
+            self.method('copyMessage', chat_id=chat_id, from_chat_id=from_chat_id, message_id=message_id, **kwargs)
+        else:
+            self.method('copyMessage', chat_id=chat_id, from_chat_id=from_chat_id, message_id=message_id, reply_markup=reply_markup, **kwargs)
 
     def addCommand(self, cmd: str):
         def decor(func):
