@@ -1,26 +1,21 @@
 import os
 import json
 import asyncio
-from aiogram import Bot, Dispatcher, types
-from aiogram.fsm.storage.memory import MemoryStorage
-from ydb import Driver, SessionPool
-from ydb.iam import ServiceAccountCredentials
+from aiogram import types
+
+from db.connection import create_connection
 from mobot.create_bot import create_bot
+from cloud.fss import FiniteStatesStorage
 
 # Lockbox-секреты подтягиваются как переменные окружения
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-YDB_ENDPOINT = os.getenv("YDB_ENDPOINT")
-YDB_DATABASE = os.getenv("YDB_DATABASE")
 
-# Глобальный пул соединений YDB (создаётся один раз при холодном старте)
-ydb_driver = Driver(
-    endpoint=YDB_ENDPOINT,
-    database=YDB_DATABASE,
-    credentials=ServiceAccountCredentials(),
-)
-ydb_pool = SessionPool(ydb_driver, size=5)
+loop = asyncio.new_event_loop()
+asyncio.set_event_loop(loop)
 
-bot, dp = create_bot(bot_token=BOT_TOKEN)
+driver, pool = asyncio.run(create_connection())
+
+bot, dp = create_bot(bot_token=BOT_TOKEN, bot_storage=FiniteStatesStorage(pool))
 
 # Регистрируешь свои хэндлеры
 # @dp.message(...)
