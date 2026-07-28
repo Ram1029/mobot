@@ -4,7 +4,8 @@ from aiogram.fsm.context import FSMContext
 from aiogram import F
 
 from mobot.phrases import phrases
-from mobot.fsm import FiniteStates, StoragedMessage, get_message_storage
+from mobot.fsm import FiniteStates
+from cloud.fsm import MessageRecord, get_message_storage
 
 router = Router()
 
@@ -28,7 +29,7 @@ async def posting(message: Message, bot: Bot, state: FSMContext):
     chat_id = message.chat.id
 
     bot_message = await bot.copy_message(message_id=message.message_id, chat_id=chat_id, from_chat_id=chat_id)
-    message_storage[bot_message.message_id] = StoragedMessage(from_user=user_id, message_type='posting', origin=message.message_id)
+    message_storage.set(MessageRecord(message_id=bot_message.message_id, from_user=user_id, type='posting', origin=message.message_id))
     markup = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text=phrases.send, callback_data=f'send|{bot_message.message_id}')],
         [InlineKeyboardButton(text=phrases.cancel, callback_data=f'cancel|{bot_message.message_id}')]

@@ -1,11 +1,11 @@
 from typing import Optional
 
 from ydb.aio import QuerySessionPool
-from cloud.storages import CloudStorage
+from cloud.storage import CloudStorage
 from aiogram.fsm.storage.base import BaseStorage
 from datetime import datetime, timezone, timedelta
 
-from cloud.records import SessionRecord
+from cloud.records import SessionRecord, MessageRecord
 
 class FiniteStatesStorage(CloudStorage, BaseStorage):
     def __init__(self, pool: QuerySessionPool):
@@ -55,3 +55,41 @@ class FiniteStatesStorage(CloudStorage, BaseStorage):
     async def get_data(self, key): pass
     async def close(self):
         await self.flush(self._pool)
+
+class MessageStorage(CloudStorage):
+    def __init__(self, pool: QuerySessionPool):
+        super().__init__()
+        self._pool = pool
+
+    async def _load_from_db(self, key: str) -> Optional[SessionRecord]:
+        message_id = int(key)
+        result = await self._pool.execute_with_retries(
+            "SELECT * FROM messages WHERE message_id = $uid0",
+            parameters={"$uid0": message_id}
+        )
+        rows = result[0].rows
+        if not rows:
+            return None
+        row = rows[0]
+        if len(row.answer_id) > 0:
+            answer_id = int(answer_id)
+        else:
+            answer_id = None
+        return MessageRecord(message_id=row.message_id, from_user=row.from_user, type=row.type, from_chat=row.from_chat, origin=row.origin, answer_id=answer_id)
+
+    async def pop(self, message_id: int):
+        key = str(message_id)
+        message_record = await self.get(key)
+        if message_record:
+            self.delete(message_record)
+
+    async def close(self):
+        await self.flush(self._pool)
+
+global_message_storage = None
+def create_message_storage(storage: MessageStorage):
+    global global_message_storage
+    global_message_storage = storage
+def get_message_storage():
+    global global_message_storage
+    return global_message_storage

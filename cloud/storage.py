@@ -22,6 +22,7 @@ class CloudStorage(ABC, Generic[T]):
     def __init__(self):
         self._cache: dict[str, T] = {}       # key → record
         self._dirty: dict[str, T] = {}       # key → dirty record
+        self._notexists: list[str] = []       # key -> notexist
 
     # ── Чтение ──────────────────────────────────────────────
 
@@ -37,6 +38,10 @@ class CloudStorage(ABC, Generic[T]):
 
     async def get(self, key: str) -> Optional[T]:
         """Достать запись: из кэша или из YDB."""
+        # 0. Смотрим, знаем ли мы о ней что-то (может такого существа нету вообще?)
+        if key in self._notexists:
+            return None
+
         # 1. Сначала смотрим dirty (там самые свежие данные)
         if key in self._dirty:
             return self._dirty[key]
@@ -49,6 +54,8 @@ class CloudStorage(ABC, Generic[T]):
         record = await self._load_from_db(key)
         if record:
             self._cache[key] = record
+        else:
+            self._notexists.append(key)
         return record
 
     # ── Запись ──────────────────────────────────────────────
@@ -57,6 +64,8 @@ class CloudStorage(ABC, Generic[T]):
         """Сохранить запись в кэше (пометит как dirty)."""
         key = self._make_key(record)
         record.mark_upsert()
+        if key in self._notexists:
+            self._notexists.remove(key)
         self._dirty[key] = record
 
     def delete(self, record: T) -> None:
@@ -64,6 +73,7 @@ class CloudStorage(ABC, Generic[T]):
         key = self._make_key(record)
         record.mark_deleted()
         self._dirty[key] = record
+        self._notexists.append(key)
 
     # ── Формирование batch-запроса ──────────────────────────
     @staticmethod
@@ -128,7 +138,7 @@ class CloudStorage(ABC, Generic[T]):
                 )
                 for col, val in pk.items():
                     params[f"${col}{idx}"] = self._to_typed_value(val)
-                    declares.append(f"DECLARE ${col}{idx} AS Uint64;")
+                    declares.append(f"DECLARE ${col}{idx} AS {self._ydb_type_name(val)};")
                 idx += 1
 
             elif record.operation == Operation.UPSERT:

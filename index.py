@@ -5,7 +5,7 @@ from aiogram import types
 
 from db.connection import create_connection
 from mobot.create_bot import create_bot
-from cloud.fss import FiniteStatesStorage
+from cloud.fsm import FiniteStatesStorage
 
 # Lockbox-секреты подтягиваются как переменные окружения
 BOT_TOKEN = os.getenv("BOT_TOKEN")

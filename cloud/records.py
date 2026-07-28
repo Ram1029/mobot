@@ -3,6 +3,8 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any
+from typing import Literal
+
 from time import time
 from datetime import datetime, timezone
 
@@ -90,12 +92,41 @@ class SessionRecord(CloudRecord):
         }
     
     def get_all_fields(self) -> dict[str, Any]:
-
-        returning = {
+        return {
             "user_id": self.user_id,
             "bot_id": self.bot_id,
             "state_id": self.state_id,
             "last_update": self.last_update or datetime.now(timezone.utc)
         }
-        print(returning)
-        return returning
+
+
+@dataclass
+class MessageRecord(CloudRecord):
+    message_id: int
+    from_user: int
+    type: Literal["posting", "moderating", "enquiring", "question", "answer"]
+    origin: int
+    from_chat: int = None
+    answer_id: int|None = None
+
+    def __post_init__(self):
+        if not self.from_chat:
+            self.from_chat = self.from_user
+
+    def get_table_name(self):
+        return 'messages'
+
+    def get_primary_key(self) -> dict[int, Any]:
+        return {
+            "message_id": self.message_id
+        }
+
+    def get_all_fields(self):
+        return {
+            "message_id": self.message_id,
+            "from_user": self.from_user,
+            "from_chat": self.from_chat,
+            "type": self.type,
+            "origin": self.origin,
+            "answer_id": str(self.answer_id) if self.answer_id else ""
+        }
