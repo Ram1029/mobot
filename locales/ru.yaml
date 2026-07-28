@@ -1,0 +1,15 @@
+hello_message: Привет! Я - тестовое приложение\nИ вот, что я умею:/test - тестовая команда\nPS: Привет мир!
+echo: Hewo!! I'm a %d app!!! I am so glad to meet you, what can U say? ^-^
+
+not_a_topic: Данный чат не является форумом!
+
+post_message: Предложить пост
+send_message: Напиши сообщение\n Чтобы отменить нажмите /cancel
+cancel_message: Вы отменили ввод!
+
+send: Отправить
+send_text: Вы отправили сообщение на модерацию!
+cancel: Отменить
+cancel_text: Вы отменили отправку сообщения!
+post_text: Сообщение отправлено в канал!
+decline_text: Сообщение отклонено(
