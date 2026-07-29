@@ -17,7 +17,7 @@ class StoragedMessage():
             self.from_chat = from_user
         self.origin = origin
 
-class MessageStorage():
+class MemoryMessageStorage():
     def __init__(self):
         self.__storage = {}
         self.__keys = []
@@ -37,7 +37,7 @@ class MessageStorage():
     def __contains__(self, message_id: int):
         return message_id in self.__keys
 
-global_message_storage = MessageStorage()
+global_message_storage = MemoryMessageStorage()
 
 def get_message_storage():
     global global_message_storage
