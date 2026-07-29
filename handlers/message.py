@@ -5,11 +5,11 @@ from aiogram import F
 
 from mobot.phrases import phrases
 from mobot.fsm import FiniteStates
-from cloud.fsm import MessageRecord, get_message_storage
+#from cloud.fsm import MessageRecord, get_message_storage
 
 router = Router()
 
-message_storage = get_message_storage()
+#message_storage = get_message_storage()
 
 @router.message(FiniteStates.default, F.text)
 async def message_handler(message: Message, bot: Bot, state: FSMContext):
@@ -22,7 +22,7 @@ async def message_handler(message: Message, bot: Bot, state: FSMContext):
     match message.entities:
         case [MessageEntity(offset=0, type='custom_emoji', custom_emoji_id=emoji)]:
             await bot.send_message(chat_id=chat_id, text=f'Custom emoji id: {emoji}')
-
+#/
 @router.message(FiniteStates.posting, ~F.text.startswith('/'))
 async def posting(message: Message, bot: Bot, state: FSMContext):
     user_id = message.from_user.id
