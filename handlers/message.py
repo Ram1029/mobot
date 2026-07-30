@@ -6,10 +6,12 @@ from aiogram import F
 from mobot.phrases import phrases
 from mobot.fsm import FiniteStates
 #from cloud.fsm import MessageRecord, get_message_storage
+from bd.connections import global_message_storage
+from bd.storage import MessageRecord
 
 router = Router()
 
-#message_storage = get_message_storage()
+message_storage = global_message_storage
 
 @router.message(FiniteStates.default, F.text)
 async def message_handler(message: Message, bot: Bot, state: FSMContext):
