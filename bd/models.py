@@ -5,7 +5,7 @@ from bd.connections import pgsql_engine
 class Base(DeclarativeBase): pass
 
 class Message(Base):
-    __table__ = 'messages'
+    __tablename__ = 'messages'
 
     message_id = Column(Integer, primary_key=True, index=True)
     from_user = Column(Integer, index=True)
@@ -15,7 +15,7 @@ class Message(Base):
     answer_id = Column(String)
 
 class User(Base):
-    __table__ = 'users'
+    __tablename__ = 'users'
 
     user_id = Column(Integer, primary_key=True, index=True)
     banned = Column(Boolean)

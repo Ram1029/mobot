@@ -1,2 +1,4 @@
 aiogram==3.30.3
 sqlalchemy=2.0.51
+redis=8.1.0
+psycopg2=2.9.12

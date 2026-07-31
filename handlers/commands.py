@@ -4,7 +4,7 @@ from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton
 from aiogram.fsm.context import FSMContext
 
 from mobot.phrases import phrases
-from mobot.fsm import FiniteStates
+from mobot.fsm import MessageStates
 
 router = Router()
 
@@ -13,13 +13,12 @@ async def hewo(message: Message, bot: Bot, state: FSMContext):
     markup = ReplyKeyboardMarkup(resize_keyboard=True, keyboard=[
         [KeyboardButton(text=phrases.post_message, icon_custom_emoji_id='5282857993677860851')]
     ])
-    await state.set_state(FiniteStates.default)
     await bot.send_message(chat_id=message.chat.id, text=phrases.hello_message, reply_markup=markup)
 
 @router.message(command.Command(commands="cancel"))
 async def cancel(message: Message, state: FSMContext):
     await message.reply(phrases.cancel_message)
-    await state.set_state(FiniteStates.default)
+    await state.clear()
 
 @router.message(command.Command(commands="ban"))
 async def ban_user(message: Message):
