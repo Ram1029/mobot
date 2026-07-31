@@ -146,7 +146,7 @@ class UserStorage(EntityStorage):
         if not user:
             user = UserRecord(int(user_id))
             self.set(user)
-        setattr(user, key) = value
+        setattr(user, key, value)
         self._session.commit()
 
     def ban(self, user_id: str|int, value: bool = True): self._set_value('banned', user_id, value)
