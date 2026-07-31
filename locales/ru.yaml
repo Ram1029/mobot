@@ -1,11 +1,29 @@
 hello_message: Привет! Я - тестовое приложение\nИ вот, что я умею:/test - тестовая команда\nPS: Привет мир!
 echo: Hewo!! I'm a %d app!!! I am so glad to meet you, what can U say? ^-^
+user_banned: Пользователь успешно заблокирован!
+user_subscribed: Вы заново подписались на рассылку!\nТеперь вы снова будете в курсе новостей
+user_unsubscribed: Вы отписались от рассылки :(\nЧтобы подписаться обратно пропишите /start
 
 not_a_topic: Данный чат не является форумом!
 
 post_message: Предложить пост
-send_message: Напиши сообщение\n Чтобы отменить нажмите /cancel
+send_message: Напиши сообщение!\nЧтобы отменить нажмите /cancel
 cancel_message: Вы отменили ввод!
+
+make_question: Задать вопрос
+make_question_message: Напишите свой вопрос\nЧтобы отменить нажмите /cancel
+ask: Спросить
+ask_text: Вы задали вопрос!
+close: Закрыть
+close_text: Вопрос закрыт
+closed_without_answer: Вопрос был закрыт без ответа(
+
+subscribe: Подписаться на рассылку
+subscribe_callback: Подписаться
+subscribe_text: Вы подписались на рассылку!\nЧтобы её переключить пропишите /subscribtion
+subscribe_callback_text: Вы подписались на рассылку!
+post: Разослать
+post_text: Сообщение успешно разослано!
 
 send: Отправить
 send_text: Вы отправили сообщение на модерацию!

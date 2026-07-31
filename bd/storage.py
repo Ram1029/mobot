@@ -45,6 +45,22 @@ class MessageRecord(EntityRecord):
         """Возвращает значение первичного ключа"""
         return self.message_id
 
+@dataclass
+class UserRecord(EntityRecord):
+    user_id: int
+    banned: bool = False
+    subscription: bool = False
+    super_user: bool = False
+    def get_object(self):
+        return User(
+            user_id = self.user_id,
+            banned = self.banned,
+            subscription = self.subscription,
+            super_user = self.super_user
+        )
+    def get_primary_key(self):
+        return self.user_id
+
 class EntityStorage(ABC):
     def __init__(self, session: Session):
         self._session = session
@@ -104,3 +120,35 @@ class MessageStorage(EntityStorage):
         if instance:
             self._session.delete(instance)
             self._session.commit()
+
+
+class UserStorage(EntityStorage):
+    def _model_class(self):
+        return User
+    def get(self, key: str | int):
+        obj = self._get_object(key)
+        if obj:
+            return UserRecord(
+                user_id= obj.user_id,
+                banned=obj.banned,
+                subscription=obj.subscription,
+                super_user=obj.super_user
+            )
+        else:
+            answer= UserRecord(user_id=int(key))
+            self.set(answer)
+            return answer
+    def __contains__(self, key: int|str):
+        obj = self._get_object(key)
+        return bool(obj)
+    def _set_value(self, key: str, user_id: str|int, value: bool = True):
+        user: User = self._get_object(user_id)
+        if not user:
+            user = UserRecord(int(user_id))
+            self.set(user)
+        setattr(user, key) = value
+        self._session.commit()
+
+    def ban(self, user_id: str|int, value: bool = True): self._set_value('banned', user_id, value)
+    def subscribe(self, user_id: str|int, value: bool = True): self._set_value('subscription', user_id, value)
+    def super_user(self, user_id: str|int, value: bool = True): self._set_value('super_user', user_id, value)
