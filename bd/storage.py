@@ -138,9 +138,17 @@ class UserStorage(EntityStorage):
             answer= UserRecord(user_id=int(key))
             self.set(answer)
             return answer
+
+    def delete(self, key: int | str):
+        instance = self._session.query(User).filter(User.user_id == int(key)).first()
+        if instance:
+            self._session.delete(instance)
+            self._session.commit()
+        
     def __contains__(self, key: int|str):
         obj = self._get_object(key)
         return bool(obj)
+    
     def _set_value(self, key: str, user_id: str|int, value: bool = True):
         user: User = self._get_object(user_id)
         if not user:
