@@ -8,6 +8,7 @@ class Message(Base):
     __tablename__ = 'messages'
 
     message_id = Column(Integer, primary_key=True, index=True)
+    chat_id = Column(Integer, primary_key=True)
     from_user = Column(Integer, index=True)
     from_chat = Column(Integer)
     origin_id = Column(Integer)

@@ -16,14 +16,10 @@ user_storage = global_user_storage
 @router.message(command.CommandStart())
 async def hewo(message: Message, bot: Bot, state: FSMContext):
     markup = kb.reply_keyboard
-    inline_markup = kb.start_inline_keyboard
     if message.from_user.id in user_storage:
         markup = kb.reply_keyboard_without_subscribtion
-        inline_markup = kb.start_inline_keyboard_without_subscribtion
-    start_message_id = await bot.send_message(chat_id=message.chat.id, text=phrases.hello_message, reply_markup=markup, inline_keyboard=inline_markup)
-    await state.set_data({
-        'start_message_id': start_message_id
-    })
+    await bot.send_message(chat_id=message.chat.id, text=phrases.hello_message, reply_markup=markup)
+    await state.clear()
 
 @router.message(command.Command(commands="cancel"))
 async def cancel(message: Message, state: FSMContext):
@@ -31,7 +27,7 @@ async def cancel(message: Message, state: FSMContext):
     await state.clear()
 
 @router.message(command.Command(commands="subscription"))
-async def subscription(message: Message, state: FSMContext):
+async def subscription(message: Message):
     user_id = message.from_user.id
     user = user_storage.get(user_id)
     if user.subscription:
@@ -40,7 +36,7 @@ async def subscription(message: Message, state: FSMContext):
     else:
         text = phrases.user_subscribed
         user_storage.subscribe(user_id)
-    message.reply(text=text)
+    await message.reply(text=text)
 
 @router.message(command.Command(commands="ban"))
 async def ban_user(message: Message, bot: Bot):
@@ -51,6 +47,10 @@ async def ban_user(message: Message, bot: Bot):
             user_id = reply_message.from_user
             user_storage.ban(user_id)
             await message.reply(text=phrases.user_banned)
+            messages = message_storage.clean(user_id)
+            for msg in messages:
+                await bot.delete_message(chat_id=msg.from_chat, message_id=msg.message_id)
+
 
 @router.message(command.Command(commands="get_topic"))
 async def get_channel_topic_id(message: Message, bot: Bot):

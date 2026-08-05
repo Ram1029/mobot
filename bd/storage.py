@@ -21,6 +21,7 @@ class EntityRecord(ABC):
 @dataclass
 class MessageRecord(EntityRecord):
     message_id: int
+    chat_id: int
     from_user: int
     origin_id: int
     type: Literal['posting', 'moderating', 'enquiring', 'question', 'answer']
@@ -34,6 +35,7 @@ class MessageRecord(EntityRecord):
         """Возвращает объект модели"""
         return Message(
             message_id=self.message_id,
+            chat_id=self.chat_id,
             from_user=self.from_user,
             from_chat=self.from_chat,
             origin_id=self.origin_id,
@@ -43,7 +45,7 @@ class MessageRecord(EntityRecord):
 
     def get_primary_key(self):
         """Возвращает значение первичного ключа"""
-        return self.message_id
+        return (self.message_id, self.chat_id)
 
 @dataclass
 class UserRecord(EntityRecord):
@@ -71,19 +73,17 @@ class EntityStorage(ABC):
     def _model_class(self):
         pass
     @abstractmethod
-    def get(self, key: int | str):
+    def get(self, key):
         pass
     @abstractmethod
-    def delete(self, key: int | str):
+    def delete(self, key):
         pass
 
-    def _get_object(self, key: int | str):
-        key = int(key)
+    def _get_object(self, key):
         obj = self._session.get(self._model_class(), key)
         return obj
 
-    def pop(self, key: int | str):
-        key = int(key)
+    def pop(self, key):
         if key in self._keys:
             self._keys.discard(key)
             instance = self._items.pop(key)
@@ -104,19 +104,31 @@ class EntityStorage(ABC):
 class MessageStorage(EntityStorage):
     def _model_class(self):
         return Message
-    def get(self, key: int | str):
-        obj = self._get_object(key)
+
+    def pop(self, message_id, chat_id):
+        key = (message_id, chat_id)
+        return super().pop(key)
+    
+    def get(self, message_id, chat_id):
+        obj = self._get_object((message_id, chat_id))
         if obj:
             return MessageRecord(
                 message_id=obj.message_id,
+                chat_id=obj.chat_id,
                 from_user=obj.from_user,
                 from_chat=obj.from_chat,
                 origin_id=obj.origin_id,
                 type=obj.type,
                 answer_id=int(obj.answer_id) if obj.answer_id else None
             )
-    def delete(self, key: int | str):
-        instance = self._session.query(Message).filter(Message.message_id == int(key)).first()
+        
+    def clean(self, user_id: int|str):
+        messages = self._session.query(Message).filter(Message.from_user == int(user_id)).all()
+        self._session.query(Message).filter(Message.from_user == int(user_id)).all()
+        return messages
+        
+    def delete(self, message_id, chat_id):
+        instance = self._session.get(Message, (message_id, chat_id))
         if instance:
             self._session.delete(instance)
             self._session.commit()
@@ -153,8 +165,8 @@ class UserStorage(EntityStorage):
         user: User = self._get_object(user_id)
         if not user:
             user = UserRecord(int(user_id))
-            self.set(user)
         setattr(user, key, value)
+        self._session.add(user)
         self._session.commit()
 
     def ban(self, user_id: str|int, value: bool = True): self._set_value('banned', user_id, value)

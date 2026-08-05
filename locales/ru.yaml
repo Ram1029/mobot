@@ -16,7 +16,7 @@ ask: Спросить
 ask_text: Вы задали вопрос!
 close: Закрыть
 close_text: Вопрос закрыт
-closed_without_answer: Вопрос был закрыт без ответа(
+closed: Вопрос был закрыт без ответа(
 
 subscribe: Подписаться на рассылку
 subscribe_callback: Подписаться

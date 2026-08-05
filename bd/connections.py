@@ -14,7 +14,7 @@ pgsql_engine = sqlalchemy.create_engine(f'postgresql://{_pgsql_user}:{_pgsql_pas
 import bd.models
 from bd.storage import MessageStorage, UserStorage
 
-pgsql_session = sessionmaker(bind=pgsql_engine, autoflush=False)
+pgsql_session = sessionmaker(bind=pgsql_engine, autoflush=False)()
 
-global_message_storage = MessageStorage(pgsql_session())
+global_message_storage = MessageStorage(pgsql_session)
 global_user_storage = UserStorage(pgsql_session)
