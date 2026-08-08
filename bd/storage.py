@@ -107,7 +107,13 @@ class MessageStorage(EntityStorage):
 
     def pop(self, message_id, chat_id):
         key = (message_id, chat_id)
-        return super().pop(key)
+        if key in self._keys:
+            self._keys.discard(key)
+            instance = self._items.pop(key)
+            self._session.delete(instance)
+            self.commit()
+        else:
+            self.delete(message_id, chat_id)
     
     def get(self, message_id, chat_id):
         obj = self._get_object((message_id, chat_id))

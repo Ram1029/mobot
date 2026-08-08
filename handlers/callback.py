@@ -1,6 +1,5 @@
 from aiogram import Bot, Router
 from aiogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
-from aiogram.fsm.context import FSMContext
 from os import getenv
 
 from bd.storage import MessageRecord
@@ -34,7 +33,7 @@ async def send(callback: CallbackQuery, bot: Bot, substract: int):
         return
     bot_message = await bot.copy_message(from_chat_id=posting_message.from_chat, message_id=posting_message.origin_id, chat_id=main_chat_id, message_thread_id=suggestions_topic_id)
     message_storage.pop(substract, callback.from_user.id)
-    message_storage.set(MessageRecord(message_id=bot_message.message_id, from_chat=main_chat_id, from_user=callback.from_user.id, type='moderating', origin_id=posting_message.origin_id))
+    message_storage.set(MessageRecord(message_id=bot_message.message_id, chat_id=main_chat_id,from_chat=main_chat_id, from_user=callback.from_user.id, type='moderating', origin_id=posting_message.origin_id))
     markup = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text=phrases.send, callback_data=f'post|{bot_message.message_id}')],
         [InlineKeyboardButton(text=phrases.cancel, callback_data=f'decline|{bot_message.message_id}')]
