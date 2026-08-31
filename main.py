@@ -15,9 +15,11 @@ import bd.connections as bd
 from mobot.create_bot import create_bot
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
+PROXY = os.getenv("HTTP_PROXY")
 
 async def main():
-    bot, dp = create_bot(bot_token=BOT_TOKEN,bot_storage=bd.redis_storage)
+    session = AiohttpSession(proxy=PROXY)
+    bot, dp = create_bot(bot_token=BOT_TOKEN,bot_storage=bd.redis_storage, session=session)
 
     print('Запуск longpolling...')
     try:
