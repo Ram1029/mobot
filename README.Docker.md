@@ -1,6 +1,6 @@
 ### Building and running your application
 
-When you're ready, start your application by running:
+Create a `.env` file from `.env.example`, then set your Telegram bot token and a PostgreSQL password. When you're ready, start the application by running:
 `docker compose up --build`.
 
 Your application will be available at http://localhost:8067.

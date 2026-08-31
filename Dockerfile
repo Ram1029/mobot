@@ -48,4 +48,4 @@ COPY . .
 EXPOSE 8067
 
 # Run the application.
-CMD py ./main.py
+CMD python ./main.py

@@ -67,7 +67,7 @@ async def ask(callback: CallbackQuery, bot: Bot, substract: int):
         return
     bot_message = await bot.copy_message(from_chat_id=enquiring_message.from_chat, message_id=enquiring_message.origin_id, chat_id=main_chat_id, message_thread_id=questions_topic_id)
     message_storage.pop(substract, callback.from_user.id)
-    message_storage.set(MessageRecord(message_id=bot_message.message_id, chat_id=main_chat_id, from_user=callback.from_user.id, type='question', origin_id=enquiring_message.origin_id))
+    message_storage.set(MessageRecord(message_id=bot_message.message_id, chat_id=main_chat_id, from_user=callback.from_user.id, type='question', origin_id=enquiring_message.origin_id, answer_id=bot_message.message_id))
     markup = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text=phrases.close, callback_data=f'close|{bot_message.message_id}')]
     ])
@@ -78,13 +78,27 @@ async def ask(callback: CallbackQuery, bot: Bot, substract: int):
 @messageCallback('close')
 async def close(callback: CallbackQuery, bot: Bot, substract: int):
     question_message = message_storage.get(substract, main_chat_id)
-    if not question_message.answer_id:
+    if not question_message:
+        await bot.answer_callback_query(callback_query_id=callback.id, text='missing data')
+        return
+    else:
         message_storage.pop(substract, main_chat_id)
         await bot.send_message(chat_id=question_message.from_user, text=phrases.closed, reply_to_message_id=question_message.origin_id)
         await bot.delete_message(message_id=question_message.message_id, chat_id=main_chat_id)
         return phrases.close_text
-    else:
-        await bot.edit_message_reply_markup(chat_id=main_chat_id, message_id=substract)
+
+@messageCallback('announcement')
+async def announcement(callback: CallbackQuery, bot: Bot, substract: int):
+    users = user_storage.get_subscribers()
+    for user_id in users:
+        await bot.copy_message(chat_id=user_id, from_chat_id=main_chat_id, message_id=substract)
+    await bot.edit_message_reply_markup(chat_id=main_chat_id, message_id=substract)
+    return phrases.announcemence_text
+
+@messageCallback('acancel')
+async def cancel_announcement(callback: CallbackQuery, bot: Bot, substract: int):
+    await bot.delete_message(chat_id=main_chat_id, message_id=substract)
+    return phrases.cancel_text
 
 @router.callback_query()
 async def callback_handler(callback: CallbackQuery, bot: Bot):

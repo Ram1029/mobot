@@ -24,7 +24,7 @@ class MessageRecord(EntityRecord):
     chat_id: int
     from_user: int
     origin_id: int
-    type: Literal['posting', 'moderating', 'enquiring', 'question', 'answer']
+    type: Literal['posting', 'moderating', 'enquiring', 'question', 'answer', 'answering']
     from_chat: int | None = None
     answer_id: int | None = None
     def __post_init__(self):
@@ -40,7 +40,7 @@ class MessageRecord(EntityRecord):
             from_chat=self.from_chat,
             origin_id=self.origin_id,
             type=self.type,
-            answer_id = self.answer_id if self.answer_id else ''
+            answer_id = self.answer_id
         )
 
     def get_primary_key(self):
@@ -130,7 +130,15 @@ class MessageStorage(EntityStorage):
         
     def clean(self, user_id: int|str):
         messages = self._session.query(Message).filter(Message.from_user == int(user_id)).all()
-        self._session.query(Message).filter(Message.from_user == int(user_id)).all()
+        self._session.query(Message).filter(Message.from_user == int(user_id)).delete()
+        self._session.commit()
+        return messages
+
+    def close_qna(self, message_id: int|str, main_chat_id: int):
+        answer_id = self.get(message_id, main_chat_id).answer_id
+        messages = self._session.query(Message).filter(Message.answer_id==answer_id, Message.chat_id==main_chat_id).all()
+        self._session.query(Message).filter(Message.answer_id == answer_id).delete()
+        self._session.commit()
         return messages
         
     def delete(self, message_id, chat_id):
@@ -178,3 +186,7 @@ class UserStorage(EntityStorage):
     def ban(self, user_id: str|int, value: bool = True): self._set_value('banned', user_id, value)
     def subscribe(self, user_id: str|int, value: bool = True): self._set_value('subscription', user_id, value)
     def super_user(self, user_id: str|int, value: bool = True): self._set_value('super_user', user_id, value)
+
+    def get_subscribers(self):
+        users = self._session.query(User).filter(User.subscription == True).all()
+        return [int(user.user_id) for user in users]

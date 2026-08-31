@@ -13,7 +13,7 @@ class Message(Base):
     from_chat = Column(BigInteger)
     origin_id = Column(Integer)
     type = Column(String)
-    answer_id = Column(String)
+    answer_id = Column(Integer)
 
 class User(Base):
     __tablename__ = 'users'

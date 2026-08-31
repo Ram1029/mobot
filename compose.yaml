@@ -11,6 +11,14 @@ services:
   bot:
     build:
       context: .
+    environment:
+      BOT_TOKEN: ${BOT_TOKEN:?Set BOT_TOKEN in .env}
+      REDIS_URL: redis://redis:6379/0
+      PGSQL_USER: postgres
+      PGSQL_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      PGSQL_HOST: db
+      PGSQL_PORT: 5432
+      PGSQL_DB: telegram-entities
     ports:
       - 8067:8067
     depends_on:
@@ -19,30 +27,28 @@ services:
       db:
         condition: service_healthy
   redis:
-    image: redis
+    image: redis:7-alpine
     restart: always
     expose:
       - 6379
     healthcheck:
-      test: ["CMD", "arg"]
+      test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
   db:
-     image: postgres
+     image: postgres:16-alpine
      restart: always
-     user: postgres
-     secrets:
-       - db-password
      volumes:
        - db-data:/var/lib/postgresql/data
      environment:
-       - POSTGRES_DB=telergram-entities
-       - POSTGRES_PASSWORD_FILE=/run/secrets/db-password
+       POSTGRES_DB: telegram-entities
+       POSTGRES_USER: postgres
+       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
      expose:
        - 5432
      healthcheck:
-       test: [ "CMD", "pg_isready" ]
+       test: [ "CMD-SHELL", "pg_isready -U postgres -d telegram-entities" ]
        interval: 10s
        timeout: 5s
        retries: 5
@@ -81,7 +87,4 @@ secrets:
 #       retries: 5
 # volumes:
 #   db-data:
-# secrets:
-#   db-password:
-#     file: db/password.txt
 

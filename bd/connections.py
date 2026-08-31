@@ -3,13 +3,17 @@ from sqlalchemy.orm import sessionmaker
 from aiogram.fsm.storage.redis import RedisStorage
 from os import getenv
 
-_redis_user, _redis_password = getenv('REDIS_USER'), getenv('REDIS_PASSWORD')
-redis_storage = RedisStorage.from_url(f'redis://localhost:6379/telegram-fsm')
+redis_storage = RedisStorage.from_url(getenv('REDIS_URL', 'redis://localhost:6379/0'))
 redis_storage.state_ttl = 600
-#redis_storage = RedisStorage.from_url(f'redix://{_redis_user}:{_redis_password}@localhost:8080/telegram-fsm')
 
-_pgsql_user, _pgsql_password = getenv('PGSQL_USER'), getenv('PGSQL_PASSWORD')
-pgsql_engine = sqlalchemy.create_engine(f'postgresql://{_pgsql_user}:{_pgsql_password}@localhost:5432/telegram-entities')
+_pgsql_user = getenv('PGSQL_USER', 'postgres')
+_pgsql_password = getenv('PGSQL_PASSWORD', '')
+_pgsql_host = getenv('PGSQL_HOST', 'localhost')
+_pgsql_port = getenv('PGSQL_PORT', '5432')
+_pgsql_db = getenv('PGSQL_DB', 'telegram-entities')
+pgsql_engine = sqlalchemy.create_engine(
+	f'postgresql://{_pgsql_user}:{_pgsql_password}@{_pgsql_host}:{_pgsql_port}/{_pgsql_db}'
+)
 
 import bd.models
 from bd.storage import MessageStorage, UserStorage

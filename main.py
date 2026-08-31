@@ -1,8 +1,14 @@
 import dotenv
 dotenv.load_dotenv('.env')
 
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 import os
 import asyncio
+from aiogram.client.session.aiohttp import AiohttpSession
 
 import bd.connections as bd
 
@@ -16,7 +22,9 @@ async def main():
     print('Запуск longpolling...')
     try:
         await dp.start_polling(bot)
-    except:
+    except Exception:
+        logger.exception("Бот упал с ошибкой")
+    finally:
         await dp.storage.close()
 
 if __name__ == "__main__":

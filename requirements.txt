@@ -1,4 +1,6 @@
-aiogram==3.30.3
-sqlalchemy=2.0.51
-redis=8.1.0
-psycopg2=2.9.12
+aiogram==3.31.0
+sqlalchemy==2.0.51
+redis==8.1.0
+psycopg2-binary==2.9.12
+python-dotenv==1.2.3
+aiohttp-socks==0.10.1
