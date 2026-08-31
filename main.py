@@ -18,7 +18,7 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 PROXY = os.getenv("HTTP_PROXY")
 
 async def main():
-    session = AiohttpSession(proxy=PROXY)
+    session = AiohttpSession(proxy=PROXY) if PROXY else None
     bot, dp = create_bot(bot_token=BOT_TOKEN,bot_storage=bd.redis_storage, session=session)
 
     print('Запуск longpolling...')
