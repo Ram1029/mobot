@@ -65,6 +65,8 @@ async def ban_user(message: Message, bot: Bot):
             for msg in messages:
                 if msg.chat_id == main_chat_id:
                     await bot.delete_message(chat_id=main_chat_id, message_id=msg.message_id)
+    await sleep(5)
+    await message.delete()
 
 @router.message(command.Command(commands='close'))
 async def close(message: Message, bot: Bot):
@@ -72,9 +74,27 @@ async def close(message: Message, bot: Bot):
         reply_id = message.reply_to_message.message_id
         reply_message: MessageRecord = message_storage.get(reply_id, main_chat_id)
         if reply_message and reply_message.type in ['question', 'answer']:
-            messages = message_storage.close_qna(reply_message.message_id, main_chat_id=main_chat_id)
+            question, messages = message_storage.close_qna(reply_message.message_id, main_chat_id=main_chat_id)
+            await bot.send_message(chat_id=question.from_user, reply_to_message_id=question.origin_id, text=phrases.cool_closed)
             for msg in messages:
                 await bot.delete_message(main_chat_id, msg.message_id)
+    await sleep(5)
+    await message.delete()
+
+@router.message(command.Command(commands='closeall'))
+async def closeall(message: Message, bot:  Bot):
+    if message.chat.id == main_chat_id:
+        questions, messages = message_storage.close_all_qna(main_chat_id=main_chat_id)
+        for msg in messages:
+            await bot.delete_message(main_chat_id, msg.message_id)
+        for question in questions:
+            try:
+                await bot.send_message(chat_id=question.from_user, reply_to_message_id=question.origin_id, text=phrases.cool_closed)
+            except Exception:
+                pass
+    await sleep(5)
+    await message.delete()
+
 
 @router.message(command.Command(commands="get_topic"))
 async def get_channel_topic_id(message: Message, bot: Bot):

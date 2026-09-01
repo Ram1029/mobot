@@ -1,5 +1,6 @@
 from aiogram import Router, Bot
 from aiogram.types import Message, MessageEntity, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
+from aiogram.enums import ChatAction
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
 from aiogram import F
@@ -40,6 +41,7 @@ async def replying(message: Message, bot: Bot):
                 [InlineKeyboardButton(text=phrases.close, callback_data=f'close|{question.message_id}')]
             ])
             await bot.edit_message_reply_markup(chat_id=main_chat_id, message_id=question.message_id, reply_markup=markup)
+            await bot.send_chat_action(chat_id=message.chat.id, action=ChatAction.TYPING)
 
 @router.message(F.text, default_state)
 async def message_handler(message: Message, bot: Bot, state: FSMContext):

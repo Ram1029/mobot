@@ -136,10 +136,23 @@ class MessageStorage(EntityStorage):
 
     def close_qna(self, message_id: int|str, main_chat_id: int):
         answer_id = self.get(message_id, main_chat_id).answer_id
+        question = self.get(message_id=answer_id, chat_id=main_chat_id)
         messages = self._session.query(Message).filter(Message.answer_id==answer_id, Message.chat_id==main_chat_id).all()
         self._session.query(Message).filter(Message.answer_id == answer_id).delete()
         self._session.commit()
-        return messages
+        return question, messages
+
+    def close_all_qna(self, main_chat_id):
+        messages = self._session.query(Message).filter(Message.answer_id != None, Message.chat_id == main_chat_id).all()
+        topics = set()
+        for msg in messages:
+            topics.add(msg.answer_id)
+        questions = []
+        for topic in topics:
+            questions.append(self.get(topic, main_chat_id))
+        self._session.query(Message).filter(Message.answer_id != None).delete()
+        self._session.commit()
+        return questions, messages
         
     def delete(self, message_id, chat_id):
         instance = self._session.get(Message, (message_id, chat_id))

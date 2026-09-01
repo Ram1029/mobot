@@ -19,6 +19,7 @@ ask_text: Вы задали вопрос!
 close: Закрыть ❌
 close_text: Вопрос закрыт
 closed: Вопрос был закрыт без ответа :(
+cool_closed: Вопрос закрыт ✔️
 
 subscribe: Подписаться на рассылку
 subscribe_callback: Подписаться
