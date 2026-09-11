@@ -18,7 +18,7 @@ class Message(Base):
 class User(Base):
     __tablename__ = 'users'
 
-    user_id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(BigInteger, primary_key=True, index=True)
     banned = Column(Boolean)
     subscription = Column(Boolean)
     super_user = Column(Boolean)
