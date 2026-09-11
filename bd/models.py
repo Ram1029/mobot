@@ -9,7 +9,7 @@ class Message(Base):
 
     message_id = Column(Integer, primary_key=True, index=True)
     chat_id = Column(BigInteger, primary_key=True)
-    from_user = Column(Integer, index=True)
+    from_user = Column(BigInteger, index=True)
     from_chat = Column(BigInteger)
     origin_id = Column(Integer)
     type = Column(String)
